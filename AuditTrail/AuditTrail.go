@@ -84,8 +84,8 @@ func (t *AuditTrailChaincode) createAudit(stub shim.ChaincodeStubInterface, args
 
 	err = stub.PutState(audit.AuditHash, auditBytes)
 	if err != nil {
-		fmt.Println("Error issuing paper")
-		return nil, errors.New("Error issuing commercial paper")
+		fmt.Println("Error save audit to chain")
+		return nil, errors.New("Error saving audit to chain")
 	}
 
 	fmt.Println("Creat audit %+v\n", audit)
