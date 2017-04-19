@@ -5,11 +5,11 @@ invoke: insert audit data to Blockchain and save all the aduit data to mongo
 package main
 
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
+"encoding/json"
+"errors"
+"fmt"
 
-	"github.com/hyperledger/fabric/core/chaincode/shim"
+"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
 type AuditTrailChaincode struct {
@@ -89,6 +89,62 @@ func (t *AuditTrailChaincode) Init(stub shim.ChaincodeStubInterface, function st
 	return nil, nil
 }
 
+/*
+may have performance issue if search all
+if need provide this, need add append "AuditKeys" to save with it when add new audit
+*/
+func GetAllAudits(stub shim.ChaincodeStubInterface) ([]Audit, error) {
+	var allAudits []Audit
+
+	//Get list of all the keys
+	keysBytes, err := stub.GetState("AuditKeys")
+	if err != nil {
+		fmt.Println("Error retrieving audit keys")
+		return nil, errors.New("Error retrieving audit keys")
+	}
+	var keys []string
+	err = json.Unmarshal(keysBytes, &keys)
+	if err != nil {
+		fmt.Println("Error unmarshalling audit keys")
+		return nil, errors.New("Error unmarshalling audit keys")
+	}
+
+	//Get all the Audits
+	for _, value := range keys {
+		auditBytes, err := stub.GetState(value)
+
+		var audit Audit
+		err = json.Unmarshal(auditBytes, &audit)
+		if err != nil {
+			fmt.Println("Error retrieving audit " + value)
+			return nil, errors.New("Error retrieving audit " + value)
+		}
+
+		fmt.Println("Appending Audit" + value)
+		allAudits = append(allAudits, audit)
+	}
+
+	return allAudits, nil
+}
+
+func GetAudit(audit_hash string, stub shim.ChaincodeStubInterface) (Audit, error) {
+	var audit Audit
+
+	auditBytes, err := stub.GetState(audit_hash)
+	if err != nil {
+		fmt.Println("Error retrieving audit " + audit_hash)
+		return audit, errors.New("Error retrieving cp " + audit_hash)
+	}
+
+	err = json.Unmarshal(auditBytes, &audit)
+	if err != nil {
+		fmt.Println("Error unmarshalling audit " + audit_hash)
+		return audit, errors.New("Error unmarshalling cp " + audit_hash)
+	}
+
+	return audit, nil
+}
+
 func IsValid(audit_hash string, stub shim.ChaincodeStubInterface) (bool, error) {
 	auditBytes, err := stub.GetState(audit_hash)
 	if err != nil {
@@ -107,7 +163,37 @@ func IsValid(audit_hash string, stub shim.ChaincodeStubInterface) (bool, error) 
 func (t *AuditTrailChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	fmt.Println("Query running. Function: " + function)
 
-	if function == "IsValid" {
+	if function == "GetAllAudits" {
+		fmt.Println("Getting all Audits")
+		allCPs, err := GetAllAudits(stub)
+		if err != nil {
+			fmt.Println("Error from GetAllAudits")
+			return nil, err
+		} else {
+			allCPsBytes, err1 := json.Marshal(&allCPs)
+			if err1 != nil {
+				fmt.Println("Error marshalling allcps")
+				return nil, err1
+			}
+			fmt.Println("All success, returning allcps")
+			return allCPsBytes, nil
+		}
+	} else if function == "GetAudit" {
+		fmt.Println("Getting particular audit")
+		audit, err := GetAudit(args[0], stub)
+		if err != nil {
+			fmt.Println("Error Getting particular audit")
+			return nil, err
+		} else {
+			auditBytes, err1 := json.Marshal(&audit)
+			if err1 != nil {
+				fmt.Println("Error marshalling the audit")
+				return nil, err1
+			}
+			fmt.Println("All success, returning the audit")
+			return auditBytes, nil
+		}
+	} else if function == "IsValid" {
 		fmt.Println("Validate hash whether existing")
 		isHashValid, err1 :=IsValid(args[0], stub)
 
