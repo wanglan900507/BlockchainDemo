@@ -93,17 +93,22 @@ func (t *SimpleChaincode) invoke(stub *shim.ChaincodeStub, args []string) ([]byt
 	fmt.Printf("Aval = %d, Bval = %d\n", Aval, Bval)
 
 	// Write the state back to the ledger
-	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
+	AString := strconv.Itoa(Aval)
+	BString := strconv.Itoa(Bval)
+	err = stub.PutState(A, []byte(AString))
 	if err != nil {
 		return nil, err
 	}
 
-	err = stub.PutState(B, []byte(strconv.Itoa(Bval)))
+	err = stub.PutState(B, []byte(BString))
 	if err != nil {
 		return nil, err
 	}
 
-	return nil, nil
+	returnBytes := []byte(AString)
+	returnBytes = append(returnBytes, BString...)
+
+	return returnBytes, nil
 }
 
 // Deletes an entity from state
