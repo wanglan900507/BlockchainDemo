@@ -18,7 +18,7 @@ type AuditTrailChaincode struct {
 
 type Audit struct {
 	AuditHash string `json:"audit_hash"` //Audit identifier
-	BusinessKey  float64    `json:"business_key"`
+	BusinessKey  string    `json:"business_key"`
 	UpdatedBy string `json:"updated_by"`
 	//return current time in milliseconds as a string
 }
@@ -27,7 +27,7 @@ func (t *AuditTrailChaincode) createAudit(stub shim.ChaincodeStubInterface, args
 	/*
 	Json{
 		"audit_hash"		: "SHA hash code",
-		"business_key"		: 191566,
+		"business_key"		: "191566",
 		"updated_by"		: "lw84456"
 	}
 	*/
