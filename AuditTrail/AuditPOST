@@ -1,0 +1,18 @@
+
+
+##invoke
+{
+  "jsonrpc": "2.0",
+  "method": "invoke",
+  "params": {
+      "type": 1,
+      "chaincodeID":{
+          "name":”93362173bec5d9ff286f6750dde30f33827ddb500eeb1ca6d8d5aa982e7187c3ce7ae02460539a1bacdbbecb2c8367e483303c71de94d4d871cd7fd8fb8f5fac"
+	},
+      "ctorMsg": {
+         "function":"invoke",
+         "args”:[`{“audit_hash”:”abc123",”business_key”:191566,”updated_by”:”LW84456"}`]
+      }
+  },
+  "id": 3
+}

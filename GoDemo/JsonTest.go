@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+	"bytes"
 )
 
 type Student struct {
@@ -49,11 +50,31 @@ func main() {
 	fmt.Println(time.Unix(timestamp, 0).String())
 
 	fmt.Println("Int convert")
-	var sumVal int64
-	var sumByte []byte
-	sumVal = 1000000000
 
-	sumByte = []byte(strconv.Itoa(sumVal))
+
+	type App struct {
+		Id string `json:"id"`
+		Title string `json:"title"`
+	}
+
+	data := []byte(`
+    {
+        "id": "k34rAT4",
+        "title": "My Awesome App"
+    }
+	`)
+
+	var app App
+	var errApp error
+
+	errApp = json.Unmarshal(data, &app)
+	if (errApp != nil) {
+		fmt.Println("Error Json ")
+	}
+
+	fmt.Println("app.title: " + app.Title)
+	fmt.Println(bytes.NewBuffer(data).String())
+	fmt.Println(string(data))
 }
 
 func GetMockData() ([]string) {
