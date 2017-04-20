@@ -10,6 +10,7 @@ import (
 	"fmt"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"strconv"
 )
 
 type AuditTrailChaincode struct {
@@ -57,10 +58,10 @@ func (t *AuditTrailChaincode) createAudit(stub shim.ChaincodeStubInterface, args
 
 	fmt.Println("Attempting to get state of any existing audit for " + audit.AuditHash)
 	existingBytes, err := stub.GetState(audit.AuditHash)
-	if err == nil {
-		fmt.Println("Audit does not exist, creating it")
-	} else {
+	if err == nil && existingBytes != nil {
 		fmt.Println("Exist audit will be overrided for hash: " + audit.AuditHash)
+	} else {
+		fmt.Println("Audit does not exist, creating it")
 	}
 
 	err = stub.PutState(audit.AuditHash, auditBytes)
@@ -69,7 +70,7 @@ func (t *AuditTrailChaincode) createAudit(stub shim.ChaincodeStubInterface, args
 		return nil, errors.New("Error saving audit to chain")
 	}
 
-	fmt.Println("Creat audit %+v\n", audit)
+	fmt.Println("Creat audit : " + string(auditBytes))
 	return nil, nil
 }
 
@@ -89,7 +90,7 @@ func (t *AuditTrailChaincode) Init(stub shim.ChaincodeStubInterface, function st
 	return nil, nil
 }
 
-func IsValid(audit_hash string, stub shim.ChaincodeStubInterface) (bool, error) {
+func isValid(audit_hash string, stub shim.ChaincodeStubInterface) (bool, error) {
 	auditBytes, err := stub.GetState(audit_hash)
 	if err != nil {
 		fmt.Println("Error retrieving audit " + audit_hash)
@@ -107,15 +108,15 @@ func IsValid(audit_hash string, stub shim.ChaincodeStubInterface) (bool, error) 
 func (t *AuditTrailChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	fmt.Println("Query running. Function: " + function)
 
-	if function == "IsValid" {
+	if function == "isValid" {
 		fmt.Println("Validate hash whether existing")
-		isHashValid, err1 :=IsValid(args[0], stub)
+		isHashValid, err1 :=isValid(args[0], stub)
 
 		if err1 != nil {
 			fmt.Println("Error Validating")
 			return nil, err1
 		}
-		return []byte(isHashValid), nil
+		return []byte(strconv.FormatBool(isHashValid)), nil
 
 	} else {
 		fmt.Println("Generic Query call")
