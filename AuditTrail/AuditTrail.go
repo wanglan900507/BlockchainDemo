@@ -56,15 +56,7 @@ func (t *AuditTrailChaincode) createAudit(stub shim.ChaincodeStubInterface, args
 		return nil, errors.New("Error adding new audit")
 	}
 
-	fmt.Println("Attempting to get state of any existing audit for " + audit.AuditHash)
-	existingBytes, err := stub.GetState(audit.AuditHash)
-	if err == nil && existingBytes != nil {
-		fmt.Println("Exist audit will be overrided for hash: " + audit.AuditHash)
-	} else {
-		fmt.Println("Audit does not exist, creating it")
-	}
-
-	err = stub.PutState(audit.AuditHash, auditBytes)
+	err = stub.PutState(audit.AuditHash + stub.GetTxID(), auditBytes)
 	if err != nil {
 		fmt.Println("Error save audit to chain")
 		return nil, errors.New("Error saving audit to chain")
